@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { instance as gaxios } from 'gaxios';
 import { LinkChecker, LinkState } from 'linkinator';
 
@@ -40,9 +40,54 @@ const result = await checker.check({
   userAgent: config.userAgent,
 });
 
-const broken = result.links.filter(l => l.state === LinkState.BROKEN && l.status === 404);
-const serverErrors = result.links.filter(l => l.state === LinkState.BROKEN && l.status >= 500);
-const botBlocked = result.links.filter(l => l.state === LinkState.BROKEN && l.status === 403);
+const allLinks = result.links;
+const brokenLinks = allLinks.filter(l => l.state === LinkState.BROKEN);
+const okLinks    = allLinks.filter(l => l.state === LinkState.OK);
+const skipped    = allLinks.filter(l => l.state === LinkState.SKIPPED);
+
+// Categorize broken links.
+// "Anchor fragments" = URLs containing # that return 404 (URL itself not found).
+// True fragment validation (anchor id missing in DOM) requires a browser-level check.
+const broken404      = brokenLinks.filter(l => l.status === 404 && !l.url.includes('#'));
+const brokenAnchors  = brokenLinks.filter(l => l.status === 404 &&  l.url.includes('#'));
+const serverErrors   = brokenLinks.filter(l => l.status >= 500);
+const botBlocked     = brokenLinks.filter(l => l.status === 403);
+const redirectErrors = brokenLinks.filter(l => l.status >= 300 && l.status < 400);
+// Network failures: no HTTP status — connection refused, timeout, DNS error, etc.
+const networkErrors  = brokenLinks.filter(l => !l.status || l.status === 0);
+
+// Unique pages visited = distinct parent URLs across all links + the root URL itself.
+const crawledPages = new Set([url, ...allLinks.map(l => l.parent).filter(Boolean)]);
+
+const toEntry = l => ({ url: l.url, parent: l.parent ?? null, status: l.status ?? null });
+
+const report = {
+  timestamp: new Date().toISOString(),
+  url,
+  passed: broken404.length === 0 && brokenAnchors.length === 0 && networkErrors.length === 0,
+  stats: {
+    totalPagesCrawled:  crawledPages.size,
+    totalLinksChecked:  allLinks.length,
+    totalOk:            okLinks.length,
+    totalSkipped:       skipped.length,
+    broken404:          broken404.length,
+    brokenAnchors:      brokenAnchors.length,
+    serverErrors:       serverErrors.length,
+    botBlocked:         botBlocked.length,
+    redirectErrors:     redirectErrors.length,
+    networkErrors:      networkErrors.length,
+  },
+  broken404:      broken404.map(toEntry),
+  brokenAnchors:  brokenAnchors.map(toEntry),
+  serverErrors:   serverErrors.map(toEntry),
+  botBlocked:     botBlocked.map(toEntry),
+  redirectErrors: redirectErrors.map(toEntry),
+  networkErrors:  networkErrors.map(toEntry),
+};
+
+await mkdir('reports', { recursive: true });
+await writeFile('reports/crawl-report.json', JSON.stringify(report, null, 2));
+console.error(`📊 report written to reports/crawl-report.json`);
 
 if (botBlocked.length > 0) {
   console.error(`⚠️  ${botBlocked.length} page(s) returned 403 (Cloudflare bot-detection, not broken links)`);
@@ -50,13 +95,15 @@ if (botBlocked.length > 0) {
 
 if (serverErrors.length > 0) {
   console.error(`⚠️  ${serverErrors.length} page(s) returned 5xx:`);
-  console.error(JSON.stringify(serverErrors.map(l => ({ status: l.status, url: l.url, parent: l.parent })), null, 2));
+  console.error(JSON.stringify(serverErrors.map(toEntry), null, 2));
 }
 
-if (broken.length === 0) {
-  console.log('All links OK (no 404s found)');
+const criticalBroken = [...broken404, ...brokenAnchors, ...networkErrors];
+
+if (criticalBroken.length === 0) {
+  console.log('✅ All links OK');
   process.exit(0);
 }
 
-console.log(JSON.stringify(broken.map(l => ({ status: l.status, url: l.url, parent: l.parent })), null, 2));
+console.log(JSON.stringify(criticalBroken.map(toEntry), null, 2));
 process.exit(1);

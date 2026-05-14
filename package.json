@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "check": "node check.mjs",
     "check:prod": "node check.mjs",
     "check:url": "node check.mjs"
   },
