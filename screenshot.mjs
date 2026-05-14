@@ -64,21 +64,25 @@ for (const [pageUrl, brokenUrls] of pages) {
     await page.waitForTimeout(1500);
 
     // In-page: outline every broken <a> in red and scroll the first into view.
+    // We compare el.href (the resolved absolute URL) rather than the raw href
+    // attribute, because linkinator reports absolute URLs while the DOM often
+    // stores relative paths like "/some/page".
     const highlightCount = await page.evaluate((urls) => {
+      const normalize = u => u.replace(/\/$/, '').toLowerCase();
+      const targets = new Set(urls.map(normalize));
       let firstEl = null;
       let count = 0;
-      for (const href of urls) {
-        // Match with or without a trailing slash.
-        [`a[href="${href}"]`, `a[href="${href}/"]`].forEach(sel => {
-          document.querySelectorAll(sel).forEach(el => {
-            el.style.outline = '3px solid #e53e3e';
-            el.style.outlineOffset = '2px';
-            el.style.backgroundColor = 'rgba(229,62,62,0.12)';
-            if (!firstEl) firstEl = el;
-            count++;
-          });
-        });
-      }
+
+      document.querySelectorAll('a[href]').forEach(el => {
+        if (targets.has(normalize(el.href))) {
+          el.style.outline = '3px solid #e53e3e';
+          el.style.outlineOffset = '2px';
+          el.style.backgroundColor = 'rgba(229,62,62,0.15)';
+          if (!firstEl) firstEl = el;
+          count++;
+        }
+      });
+
       if (firstEl) firstEl.scrollIntoView({ behavior: 'instant', block: 'center' });
       return count;
     }, [...brokenUrls]);

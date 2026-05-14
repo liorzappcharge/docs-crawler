@@ -6,6 +6,7 @@
     "check": "node check.mjs",
     "check:prod": "node check.mjs",
     "check:url": "node check.mjs",
+    "prescreenshot": "npx playwright install chromium",
     "screenshot": "node screenshot.mjs"
   },
   "devDependencies": {

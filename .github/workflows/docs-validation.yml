@@ -145,60 +145,73 @@ jobs:
           lines.push(`| 🤖 Bot-blocked (403)   | ${stats.botBlocked} |`);
           lines.push('');
 
-          // ── Reusable table renderer ─────────────────────────────────────────
-          function table(title, entries, cols) {
-            if (!entries.length) return;
-            lines.push(`### ${title}`);
-            lines.push('');
-            lines.push(`| ${cols.map(c => c.label).join(' | ')} |`);
-            lines.push(`| ${cols.map(() => '---').join(' | ')} |`);
-            for (const entry of entries.slice(0, 50)) {
-              lines.push(`| ${cols.map(c => String(entry[c.key] ?? '-')).join(' | ')} |`);
-            }
-            if (entries.length > 50) {
-              lines.push(`| _…and ${entries.length - 50} more — download \`crawl-report.json\` for the full list_ | |`);
-            }
-            lines.push('');
-          }
+          // ── Failures — grouped by source page ──────────────────────────────
+          // Each page gets one block: broken-link table + its screenshot inline.
+          // This lets a reviewer see the visual context without switching sections.
+          const allFailed = [
+            ...report.broken404.map(l => ({ ...l, type: '404 Not Found' })),
+            ...report.brokenAnchors.map(l => ({ ...l, type: 'Invalid Anchor' })),
+            ...report.networkErrors.map(l => ({ ...l, type: 'Network Error' })),
+          ];
 
-          // ── Failures ────────────────────────────────────────────────────────
-          if (!report.passed) {
+          if (!report.passed && allFailed.length > 0) {
+            // Group entries by source page, sorted by most broken links first.
+            const byPage = new Map();
+            for (const entry of allFailed) {
+              const key = entry.parent || '(unknown source)';
+              if (!byPage.has(key)) byPage.set(key, []);
+              byPage.get(key).push(entry);
+            }
+            const sortedPages = [...byPage.entries()].sort((a, b) => b[1].length - a[1].length);
+
             lines.push('## ❌ Failures');
             lines.push('');
-            lines.push('> These issues caused the workflow to fail and must be resolved.');
+            lines.push(`> **${sortedPages.length} source page(s)** contain broken links.`);
+            lines.push('> Download the artifact and open `report.md` locally to view screenshots.');
             lines.push('');
 
-            table('Broken Links (404)', report.broken404, [
-              { label: 'Source Page', key: 'parent' },
-              { label: 'Broken URL',  key: 'url' },
-            ]);
+            sortedPages.forEach(([pageUrl, entries], i) => {
+              lines.push(`### ${i + 1}. ${pageUrl}`);
+              lines.push('');
 
-            table('Invalid Anchor Fragments', report.brokenAnchors, [
-              { label: 'Source Page',   key: 'parent' },
-              { label: 'Broken Anchor', key: 'url' },
-            ]);
+              // Broken links table for this page
+              lines.push('| Type | Broken URL |');
+              lines.push('|------|------------|');
+              for (const e of entries.slice(0, 30)) {
+                lines.push(`| ${e.type} | ${e.url} |`);
+              }
+              if (entries.length > 30) {
+                lines.push(`| _…and ${entries.length - 30} more — see \`crawl-report.json\`_ | |`);
+              }
+              lines.push('');
 
-            table('Network / Timeout Failures', report.networkErrors, [
-              { label: 'Source Page', key: 'parent' },
-              { label: 'URL',         key: 'url' },
-            ]);
+              // Screenshot for this page — inline image resolves relative to report.md
+              const shot = screenshotByPage[pageUrl];
+              if (shot) {
+                lines.push(`![Broken links highlighted on ${pageUrl}](screenshots/${shot})`);
+                lines.push('');
+              }
+
+              if (i < sortedPages.length - 1) lines.push('---');
+              lines.push('');
+            });
           }
 
-          // ── Warnings ────────────────────────────────────────────────────────
+          // ── Warnings (server errors — don't fail the job) ───────────────────
           if (report.serverErrors.length > 0) {
             lines.push('## ⚠️ Warnings');
             lines.push('');
             lines.push('> Server errors may be transient; they do **not** fail the workflow.');
             lines.push('');
-            table('Server Errors (5xx)', report.serverErrors, [
-              { label: 'Status',      key: 'status' },
-              { label: 'URL',         key: 'url' },
-              { label: 'Source Page', key: 'parent' },
-            ]);
+            lines.push('| Status | URL | Source Page |');
+            lines.push('|--------|-----|-------------|');
+            for (const e of report.serverErrors.slice(0, 30)) {
+              lines.push(`| ${e.status ?? '-'} | ${e.url} | ${e.parent ?? '-'} |`);
+            }
+            lines.push('');
           }
 
           // ── Top failed URLs ─────────────────────────────────────────────────
-          const allFailed = [...report.broken404, ...report.brokenAnchors, ...report.networkErrors];
           if (allFailed.length > 0) {
             const counts = {};
             for (const l of allFailed) counts[l.url] = (counts[l.url] || 0) + 1;
@@ -209,40 +222,6 @@ jobs:
             lines.push('|---|-----|-------------|');
             top.forEach(([u, n], i) => lines.push(`| ${i + 1} | ${u} | ${n} |`));
             lines.push('');
-          }
-
-          // ── Screenshots ─────────────────────────────────────────────────────
-          // Inline images only render when the artifact is downloaded locally;
-          // the job summary section shows filenames for reference instead.
-          if (screenshots.length > 0) {
-            lines.push('## 📸 Screenshots');
-            lines.push('');
-            lines.push('> **Tip:** Download the artifact and open `report.md` locally to view');
-            lines.push('> screenshots with broken links highlighted in red.');
-            lines.push('');
-
-            for (const s of screenshots) {
-              lines.push(`### ${s.page}`);
-              lines.push('');
-              if (s.screenshot) {
-                lines.push(`- **File:** \`screenshots/${s.screenshot}\``);
-                lines.push(`- **Broken links on page:** ${s.brokenLinks.length}`);
-                lines.push(`- **Elements highlighted:** ${s.highlightedElements}`);
-                lines.push('');
-                // Inline image — resolves to screenshots/<file> relative to report.md
-                lines.push(`![${s.page}](screenshots/${s.screenshot})`);
-              } else {
-                lines.push(`> ⚠️ Screenshot failed: ${s.error || 'unknown error'}`);
-              }
-              lines.push('');
-
-              if (s.brokenLinks.length > 0) {
-                lines.push('**Broken links found on this page:**');
-                lines.push('');
-                for (const u of s.brokenLinks) lines.push(`- ${u}`);
-                lines.push('');
-              }
-            }
           }
 
           fs.writeFileSync('reports/report.md', lines.join('\n'));
