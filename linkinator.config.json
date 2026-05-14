@@ -1,0 +1,21 @@
+{
+  "url": "https://docs.appcharge.com/",
+  "recurse": true,
+  "timeout": 10000,
+  "concurrency": 5,
+  "verbosity": "ERROR",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "retry": true,
+  "retryErrors": true,
+  "retryErrorsCount": 2,
+  "skip": [
+    "mailto:",
+    "tel:",
+    "https://twitter.com",
+    "https://x.com",
+    "https://linkedin.com",
+    "https://www.linkedin.com",
+    "^https?://(?!.*appcharge)",
+    "/mintlify-assets/"
+  ]
+}

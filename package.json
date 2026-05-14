@@ -1,0 +1,15 @@
+{
+  "name": "broken-links",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check:prod": "node check.mjs",
+    "check:url": "node check.mjs"
+  },
+  "devDependencies": {
+    "linkinator": "^6.0.0"
+  },
+  "dependencies": {
+    "gaxios": "^7.1.4"
+  }
+}
