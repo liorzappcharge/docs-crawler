@@ -248,7 +248,7 @@ jobs:
             reports/crawl-report.json
             reports/report.md
             reports/crawl.log
-            reports/screenshots/
+            reports/screenshots/*.png
           retention-days: 30
 
       # ── 11. Failure gate ───────────────────────────────────────────────────────

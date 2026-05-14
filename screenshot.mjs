@@ -96,6 +96,13 @@ for (const [pageUrl, brokenUrls] of pages) {
       .slice(0, 80);
     const filename = `${slug}.png`;
 
+    if (highlightCount === 0) {
+      console.log(`⏭️   ${pageUrl}  — no elements highlighted, skipping screenshot`);
+      screenshotIndex.push({ page: pageUrl, brokenLinks: [...brokenUrls], highlightedElements: 0, screenshot: null });
+      await ctx.close();
+      continue;
+    }
+
     await page.screenshot({ path: `reports/screenshots/${filename}` });
 
     screenshotIndex.push({
