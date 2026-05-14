@@ -5,10 +5,12 @@
   "scripts": {
     "check": "node check.mjs",
     "check:prod": "node check.mjs",
-    "check:url": "node check.mjs"
+    "check:url": "node check.mjs",
+    "screenshot": "node screenshot.mjs"
   },
   "devDependencies": {
-    "linkinator": "^6.0.0"
+    "linkinator": "^6.0.0",
+    "playwright": "^1.60.0"
   },
   "dependencies": {
     "gaxios": "^7.1.4"

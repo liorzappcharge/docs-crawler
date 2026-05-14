@@ -17,7 +17,7 @@ jobs:
     name: Validate Documentation Links
     runs-on: ubuntu-latest
     # Hard cap for the entire job; the crawl step has its own inner timeout.
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       # ── 1. Source ──────────────────────────────────────────────────────────────
@@ -36,15 +36,21 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # ── 4. Output directory ────────────────────────────────────────────────────
+      # ── 4. Playwright browser ──────────────────────────────────────────────────
+      # Downloads the Chromium binary used by screenshot.mjs.
+      # --with-deps also installs the OS-level libraries Chromium needs on Linux.
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      # ── 5. Output directory ────────────────────────────────────────────────────
       # Must exist before the crawl so stderr redirection (2>reports/crawl.log)
       # doesn't fail at the shell level before Node.js even starts.
       - name: Create reports directory
         run: mkdir -p reports
 
-      # ── 5. Crawl ───────────────────────────────────────────────────────────────
+      # ── 6. Crawl ───────────────────────────────────────────────────────────────
       # check.mjs exits 1 when broken links are found. continue-on-error lets the
-      # reporting steps run regardless; the job is re-failed explicitly at step 9.
+      # reporting steps run regardless; the job is re-failed explicitly at step 11.
       - name: Crawl documentation and check links
         id: crawl
         timeout-minutes: 30
@@ -59,16 +65,29 @@ jobs:
           # in reports/crawl-report.json directly.
           npm run check 2>reports/crawl.log
 
-      # ── 6. Generate Markdown report ────────────────────────────────────────────
-      # Reads reports/crawl-report.json (written by check.mjs) and produces a
-      # human-readable Markdown file used both as an artifact and as the job summary.
+      # ── 7. Screenshot broken-link pages ───────────────────────────────────────
+      # Opens each source page that contains broken links in a headless browser,
+      # highlights the offending anchors in red, and saves a viewport screenshot.
+      # Runs even when the crawl failed so reviewers always get visual context.
+      - name: Screenshot pages with broken links
+        if: always()
+        timeout-minutes: 10
+        env:
+          DOCS_URL: ${{ github.event.inputs.docs_url }}
+        run: npm run screenshot
+
+      # ── 8. Generate Markdown report ────────────────────────────────────────────
+      # Reads reports/crawl-report.json and reports/screenshots/index.json, then
+      # produces report.md which is used both as an artifact and as the job summary.
+      # Inline image tags in report.md resolve to the screenshots/ folder, so the
+      # images render correctly when the artifact is downloaded and opened locally.
       - name: Generate Markdown report
         if: always()
         run: |
           node << 'GENREPORT'
           const fs = require('fs');
 
-          // Fall back to an empty skeleton if check.mjs crashed before writing the report.
+          // ── Load crawl report (fall back to empty skeleton on crash) ───────────
           let report;
           try {
             report = JSON.parse(fs.readFileSync('reports/crawl-report.json', 'utf8'));
@@ -85,6 +104,18 @@ jobs:
               broken404: [], brokenAnchors: [], serverErrors: [],
               botBlocked: [], redirectErrors: [], networkErrors: [],
             };
+          }
+
+          // ── Load screenshot index (optional — screenshots may not exist) ───────
+          let screenshots = [];
+          try {
+            screenshots = JSON.parse(fs.readFileSync('reports/screenshots/index.json', 'utf8'));
+          } catch { /* no screenshots */ }
+
+          // Build a map: source page URL → screenshot filename
+          const screenshotByPage = {};
+          for (const s of screenshots) {
+            if (s.screenshot) screenshotByPage[s.page] = s.screenshot;
           }
 
           const { stats } = report;
@@ -121,8 +152,7 @@ jobs:
             lines.push('');
             lines.push(`| ${cols.map(c => c.label).join(' | ')} |`);
             lines.push(`| ${cols.map(() => '---').join(' | ')} |`);
-            const shown = entries.slice(0, 50);
-            for (const entry of shown) {
+            for (const entry of entries.slice(0, 50)) {
               lines.push(`| ${cols.map(c => String(entry[c.key] ?? '-')).join(' | ')} |`);
             }
             if (entries.length > 50) {
@@ -144,8 +174,8 @@ jobs:
             ]);
 
             table('Invalid Anchor Fragments', report.brokenAnchors, [
-              { label: 'Source Page',    key: 'parent' },
-              { label: 'Broken Anchor',  key: 'url' },
+              { label: 'Source Page',   key: 'parent' },
+              { label: 'Broken Anchor', key: 'url' },
             ]);
 
             table('Network / Timeout Failures', report.networkErrors, [
@@ -181,20 +211,55 @@ jobs:
             lines.push('');
           }
 
+          // ── Screenshots ─────────────────────────────────────────────────────
+          // Inline images only render when the artifact is downloaded locally;
+          // the job summary section shows filenames for reference instead.
+          if (screenshots.length > 0) {
+            lines.push('## 📸 Screenshots');
+            lines.push('');
+            lines.push('> **Tip:** Download the artifact and open `report.md` locally to view');
+            lines.push('> screenshots with broken links highlighted in red.');
+            lines.push('');
+
+            for (const s of screenshots) {
+              lines.push(`### ${s.page}`);
+              lines.push('');
+              if (s.screenshot) {
+                lines.push(`- **File:** \`screenshots/${s.screenshot}\``);
+                lines.push(`- **Broken links on page:** ${s.brokenLinks.length}`);
+                lines.push(`- **Elements highlighted:** ${s.highlightedElements}`);
+                lines.push('');
+                // Inline image — resolves to screenshots/<file> relative to report.md
+                lines.push(`![${s.page}](screenshots/${s.screenshot})`);
+              } else {
+                lines.push(`> ⚠️ Screenshot failed: ${s.error || 'unknown error'}`);
+              }
+              lines.push('');
+
+              if (s.brokenLinks.length > 0) {
+                lines.push('**Broken links found on this page:**');
+                lines.push('');
+                for (const u of s.brokenLinks) lines.push(`- ${u}`);
+                lines.push('');
+              }
+            }
+          }
+
           fs.writeFileSync('reports/report.md', lines.join('\n'));
           console.log('Markdown report written to reports/report.md');
           GENREPORT
 
-      # ── 7. Publish job summary ─────────────────────────────────────────────────
+      # ── 9. Publish job summary ─────────────────────────────────────────────────
       # The Markdown report is appended to the built-in GitHub Actions job summary
       # so results are visible directly on the workflow run page.
       - name: Publish job summary
         if: always()
         run: cat reports/report.md >> "$GITHUB_STEP_SUMMARY"
 
-      # ── 8. Upload artifacts ────────────────────────────────────────────────────
-      # All three report files are preserved for 30 days even when the job fails,
-      # so you can always download and inspect them after the run.
+      # ── 10. Upload artifacts ───────────────────────────────────────────────────
+      # All report files — including screenshots — are preserved for 30 days even
+      # when the job fails. Download the artifact and open report.md to see the
+      # screenshots rendered inline alongside the broken-link tables.
       - name: Upload reports as workflow artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -204,9 +269,10 @@ jobs:
             reports/crawl-report.json
             reports/report.md
             reports/crawl.log
+            reports/screenshots/
           retention-days: 30
 
-      # ── 9. Failure gate ────────────────────────────────────────────────────────
+      # ── 11. Failure gate ───────────────────────────────────────────────────────
       # Re-surface the crawl failure after all reporting steps have completed.
       # This is what actually marks the workflow run as failed in GitHub.
       - name: Fail if broken links were detected
