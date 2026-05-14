@@ -89,7 +89,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          node << 'UPLOAD'
+          node --input-type=commonjs << 'UPLOAD'
           const https = require('https');
           const fs   = require('fs');
 
@@ -197,7 +197,7 @@ jobs:
       - name: Generate Markdown report
         if: always()
         run: |
-          node << 'GENREPORT'
+          node --input-type=commonjs << 'GENREPORT'
           const fs = require('fs');
 
           // ── Load crawl report (fall back to empty skeleton on crash) ───────────
