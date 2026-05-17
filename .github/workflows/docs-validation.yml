@@ -1,16 +1,16 @@
 name: Documentation Validation
 
 on:
-  # Run every day at 06:00 UTC
-  schedule:
-    - cron: '0 6 * * *'
-  # Allow manual runs from the Actions tab (optionally override the target URL)
-  workflow_dispatch:
-    inputs:
-      docs_url:
-        description: 'Docs URL to crawl (leave blank to use linkinator.config.json)'
-        required: false
-        default: 'https://docs.appcharge.com'
+  # # Run every day at 06:00 UTC
+  # schedule:
+  #   - cron: '0 6 * * *'
+  # # Allow manual runs from the Actions tab (optionally override the target URL)
+  # workflow_dispatch:
+  #   inputs:
+  #     docs_url:
+  #       description: 'Docs URL to crawl (leave blank to use linkinator.config.json)'
+  #       required: false
+  #       default: 'https://docs.appcharge.com'
 
 jobs:
   validate-docs:
