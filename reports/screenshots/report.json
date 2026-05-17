@@ -1,0 +1,98 @@
+[
+  {
+    "page": "https://docs.appcharge.com/changelog",
+    "brokenLinks": [
+      "https://docs.appcharge.com/sdks/ios-payment-links/ios-mobile-checkout-sdk/unity/setup",
+      "https://docs.appcharge.com/guides/ios-payment-links/about-ios-payment-links",
+      "https://docs.appcharge.com/sdks/fe-checkout/vuejs3-sdk",
+      "https://docs.appcharge.com/api-reference/webstore/personalization/personalization-api",
+      "https://docs.appcharge.com/api-reference/events/login/login_land",
+      "https://docs.appcharge.com/api-reference/events/store-interaction/offers_loaded",
+      "https://docs.appcharge.com/api-reference/events/error/invalid_property_error"
+    ],
+    "screenshot": "docs_appcharge_com_changelog.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/api-reference/whats-new/release-notes",
+    "brokenLinks": [
+      "https://docs.appcharge.com/api-reference/checkout/orders/initiate-refund",
+      "https://docs.appcharge.com/api-reference/events/store-interaction",
+      "https://docs.appcharge.com/guides/ios-payment-links/sample-unity-app-flow",
+      "https://docs.appcharge.com/api-reference/webstore/personalization/personalization-trigger-api"
+    ],
+    "screenshot": "docs_appcharge_com_api_reference_whats_new_release_notes.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/sdks/payment-links/ios/introduction",
+    "brokenLinks": [
+      "https://docs.appcharge.com/sdks/payment-links/ios/android/setup",
+      "https://docs.appcharge.com/sdks/payment-links/ios/payment-link-flow",
+      "https://docs.appcharge.com/sdks/payment-links/ios/ios/setup"
+    ],
+    "screenshot": null
+  },
+  {
+    "page": "https://docs.appcharge.com/guides/publisher-dashboard/add-translations",
+    "brokenLinks": [
+      "https://docs.appcharge.com/guides/publisher-dashboard/translate-game-portal-content",
+      "https://docs.appcharge.com/guides/publisher-dashboard/set-and-manage-translations"
+    ],
+    "screenshot": null
+  },
+  {
+    "page": "https://docs.appcharge.com/guides/checkout/checkout-high-level-flow",
+    "brokenLinks": [
+      "https://docs.appcharge.com/api-reference/events/order/order_created"
+    ],
+    "screenshot": "docs_appcharge_com_guides_checkout_checkout_high_level_flow.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/guides/webstore/offers/progress-bars/about-progress-bars",
+    "brokenLinks": [
+      "https://docs.appcharge.com/guides/webstore/offers/progress-bars/api-reference/webstore/offers-v2/introduction"
+    ],
+    "screenshot": "docs_appcharge_com_guides_webstore_offers_progress_bars_about_progress_bars.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/guides/checkout/orders/about-player-order-reporting",
+    "brokenLinks": [
+      "https://docs.appcharge.com/guides/checkout/orders/set-up-award-notifications"
+    ],
+    "screenshot": null
+  },
+  {
+    "page": "https://docs.appcharge.com/api-reference/checkout/checkout-session/create-checkout-session",
+    "brokenLinks": [
+      "https://docs.appcharge.com/cancel-checkout-session"
+    ],
+    "screenshot": "docs_appcharge_com_api_reference_checkout_checkout_session_create_checkout_sessi.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/api-reference/checkout/coupons/create-coupon",
+    "brokenLinks": [
+      "https://docs.appcharge.com/checkout-session/create-checkout-session"
+    ],
+    "screenshot": "docs_appcharge_com_api_reference_checkout_coupons_create_coupon.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/sdks/payment-links/unity/launch-the-checkout",
+    "brokenLinks": [
+      "https://docs.appcharge.com/guides/payment-links/ios-payment-links/sell-outside-iap"
+    ],
+    "screenshot": "docs_appcharge_com_sdks_payment_links_unity_launch_the_checkout.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/api-reference/events/introduction",
+    "brokenLinks": [
+      "https://docs.appcharge.com/api-reference/events/refund-dispute/order_refunded"
+    ],
+    "screenshot": "docs_appcharge_com_api_reference_events_introduction.png"
+  },
+  {
+    "page": "https://docs.appcharge.com/api-reference/webstore/player-authentication/preauthenticated-login/introduction",
+    "brokenLinks": [
+      "https://docs.appcharge.com/api-reference/webstore/player-authentication/preauthenticated-login/set-up-pre-authenticated-login"
+    ],
+    "screenshot": null
+  }
+]

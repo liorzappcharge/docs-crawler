@@ -1,0 +1,182 @@
+{
+  "timestamp": "2026-05-17T14:16:34.693Z",
+  "url": "https://docs.appcharge.com/",
+  "passed": false,
+  "stats": {
+    "totalPagesCrawled": 341,
+    "totalLinksChecked": 1503,
+    "totalOk": 1039,
+    "totalSkipped": 434,
+    "broken404": 24,
+    "wrongPrefix404": 4,
+    "brokenAnchors": 0,
+    "serverErrors": 0,
+    "botBlocked": 2,
+    "redirectErrors": 0,
+    "networkErrors": 0
+  },
+  "broken404": [
+    {
+      "url": "https://docs.appcharge.com/sdks/ios-payment-links/ios-mobile-checkout-sdk/unity/setup",
+      "parent": "https://docs.appcharge.com/changelog",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/guides/ios-payment-links/about-ios-payment-links",
+      "parent": "https://docs.appcharge.com/changelog",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/sdks/fe-checkout/vuejs3-sdk",
+      "parent": "https://docs.appcharge.com/changelog",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/webstore/personalization/personalization-api",
+      "parent": "https://docs.appcharge.com/changelog",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/events/login/login_land",
+      "parent": "https://docs.appcharge.com/changelog",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/events/store-interaction/offers_loaded",
+      "parent": "https://docs.appcharge.com/changelog",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/events/error/invalid_property_error",
+      "parent": "https://docs.appcharge.com/changelog",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/events/order/order_created",
+      "parent": "https://docs.appcharge.com/guides/checkout/checkout-high-level-flow",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/checkout/orders/initiate-refund",
+      "parent": "https://docs.appcharge.com/api-reference/whats-new/release-notes",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/events/store-interaction",
+      "parent": "https://docs.appcharge.com/api-reference/whats-new/release-notes",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/guides/ios-payment-links/sample-unity-app-flow",
+      "parent": "https://docs.appcharge.com/api-reference/whats-new/release-notes",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/webstore/personalization/personalization-trigger-api",
+      "parent": "https://docs.appcharge.com/api-reference/whats-new/release-notes",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/guides/webstore/offers/progress-bars/api-reference/webstore/offers-v2/introduction",
+      "parent": "https://docs.appcharge.com/guides/webstore/offers/progress-bars/about-progress-bars",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/sdks/payment-links/ios/ios/setup",
+      "parent": "https://docs.appcharge.com/sdks/payment-links/ios/introduction",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/sdks/payment-links/ios/android/setup",
+      "parent": "https://docs.appcharge.com/sdks/payment-links/ios/introduction",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/sdks/payment-links/ios/payment-link-flow",
+      "parent": "https://docs.appcharge.com/sdks/payment-links/ios/introduction",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/guides/publisher-dashboard/set-and-manage-translations",
+      "parent": "https://docs.appcharge.com/guides/publisher-dashboard/add-translations",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/guides/publisher-dashboard/translate-game-portal-content",
+      "parent": "https://docs.appcharge.com/guides/publisher-dashboard/add-translations",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/guides/checkout/orders/set-up-award-notifications",
+      "parent": "https://docs.appcharge.com/guides/checkout/orders/about-player-order-reporting",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/cancel-checkout-session",
+      "parent": "https://docs.appcharge.com/api-reference/checkout/checkout-session/create-checkout-session",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/checkout-session/create-checkout-session",
+      "parent": "https://docs.appcharge.com/api-reference/checkout/coupons/update-coupon",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/events/refund-dispute/order_refunded",
+      "parent": "https://docs.appcharge.com/api-reference/events/introduction",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/guides/payment-links/ios-payment-links/sell-outside-iap",
+      "parent": "https://docs.appcharge.com/sdks/payment-links/unity/launch-the-checkout",
+      "status": 404
+    },
+    {
+      "url": "https://docs.appcharge.com/api-reference/webstore/player-authentication/preauthenticated-login/set-up-pre-authenticated-login",
+      "parent": "https://docs.appcharge.com/api-reference/webstore/player-authentication/preauthenticated-login/introduction",
+      "status": 404
+    }
+  ],
+  "wrongPrefix404": [
+    {
+      "url": "https://docs.appcharge.com/publisher-dashboard/set-up-your-publisher-dashboard",
+      "parent": "https://docs.appcharge.com/",
+      "status": 404,
+      "suggestedUrl": "https://docs.appcharge.com/guides/publisher-dashboard/set-up-your-publisher-dashboard"
+    },
+    {
+      "url": "https://docs.appcharge.com/webstore/player-authentication/game-redirect-login/set-up-game-redirect-login",
+      "parent": "https://docs.appcharge.com/guides/publisher-dashboard/configure-developer-settings",
+      "status": 404,
+      "suggestedUrl": "https://docs.appcharge.com/guides/webstore/player-authentication/game-redirect-login/set-up-game-redirect-login"
+    },
+    {
+      "url": "https://docs.appcharge.com/events/introduction",
+      "parent": "https://docs.appcharge.com/api-reference/checkout/checkout-session/cancel-checkout-session",
+      "status": 404,
+      "suggestedUrl": "https://docs.appcharge.com/api-reference/events/introduction"
+    },
+    {
+      "url": "https://docs.appcharge.com/webstore/offers-v2/introduction",
+      "parent": "https://docs.appcharge.com/api-reference/checkout/coupons/update-coupon",
+      "status": 404,
+      "suggestedUrl": "https://docs.appcharge.com/api-reference/webstore/offers-v2/introduction"
+    }
+  ],
+  "brokenAnchors": [],
+  "serverErrors": [],
+  "botBlocked": [
+    {
+      "url": "https://publishers.appcharge.com/hc/en-us",
+      "parent": "https://docs.appcharge.com/",
+      "status": 403
+    },
+    {
+      "url": "https://mintlify.s3.us-west-1.amazonaws.com/appcharge/images/docs/add-translations.png",
+      "parent": "https://docs.appcharge.com/guides/translations/set-and-manage-translations",
+      "status": 403
+    }
+  ],
+  "redirectErrors": [],
+  "networkErrors": []
+}

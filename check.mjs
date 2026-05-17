@@ -48,7 +48,7 @@ const skipped    = allLinks.filter(l => l.state === LinkState.SKIPPED);
 // Categorize broken links.
 // "Anchor fragments" = URLs containing # that return 404 (URL itself not found).
 // True fragment validation (anchor id missing in DOM) requires a browser-level check.
-const broken404      = brokenLinks.filter(l => l.status === 404 && !l.url.includes('#'));
+const broken404Raw   = brokenLinks.filter(l => l.status === 404 && !l.url.includes('#'));
 const brokenAnchors  = brokenLinks.filter(l => l.status === 404 &&  l.url.includes('#'));
 const serverErrors   = brokenLinks.filter(l => l.status >= 500);
 const botBlocked     = brokenLinks.filter(l => l.status === 403);
@@ -56,10 +56,42 @@ const redirectErrors = brokenLinks.filter(l => l.status >= 300 && l.status < 400
 // Network failures: no HTTP status — connection refused, timeout, DNS error, etc.
 const networkErrors  = brokenLinks.filter(l => !l.status || l.status === 0);
 
+// Section-prefix false-positive filter.
+// Mintlify's JS router rewrites hrefs at runtime: a link stored as
+// "/events/introduction" in the HTML navigates to
+// "/api-reference/events/introduction" in the browser.  The crawler sees the
+// raw href (no prefix) → 404.  We detect these by checking whether prepending a
+// known section prefix produces a URL that the crawl already visited successfully.
+const SECTION_PREFIXES = ['guides', 'api-reference', 'sdks', 'merchant-of-record'];
+const validUrlSet = new Set(okLinks.map(l => l.url.replace(/\/$/, '').toLowerCase()));
+
+function findPrefixedAlternative(brokenUrl) {
+  let parsed;
+  try { parsed = new URL(brokenUrl); } catch { return null; }
+  const segments = parsed.pathname.replace(/^\//, '').split('/').filter(Boolean);
+  // Already starts with a section prefix → genuinely broken, not a false positive.
+  if (segments.length === 0 || SECTION_PREFIXES.includes(segments[0])) return null;
+  for (const prefix of SECTION_PREFIXES) {
+    const candidate = new URL(brokenUrl);
+    candidate.pathname = `/${prefix}/${segments.join('/')}`;
+    if (validUrlSet.has(candidate.href.replace(/\/$/, '').toLowerCase())) {
+      return candidate.href;
+    }
+  }
+  return null;
+}
+
+const wrongPrefix404 = broken404Raw
+  .map(l => ({ ...l, suggestedUrl: findPrefixedAlternative(l.url) }))
+  .filter(l => l.suggestedUrl !== null);
+const wrongPrefixSet = new Set(wrongPrefix404.map(l => l.url));
+const broken404      = broken404Raw.filter(l => !wrongPrefixSet.has(l.url));
+
 // Unique pages visited = distinct parent URLs across all links + the root URL itself.
 const crawledPages = new Set([url, ...allLinks.map(l => l.parent).filter(Boolean)]);
 
 const toEntry = l => ({ url: l.url, parent: l.parent ?? null, status: l.status ?? null });
+const toWrongPrefixEntry = l => ({ ...toEntry(l), suggestedUrl: l.suggestedUrl });
 
 const report = {
   timestamp: new Date().toISOString(),
@@ -71,6 +103,7 @@ const report = {
     totalOk:            okLinks.length,
     totalSkipped:       skipped.length,
     broken404:          broken404.length,
+    wrongPrefix404:     wrongPrefix404.length,
     brokenAnchors:      brokenAnchors.length,
     serverErrors:       serverErrors.length,
     botBlocked:         botBlocked.length,
@@ -78,6 +111,7 @@ const report = {
     networkErrors:      networkErrors.length,
   },
   broken404:      broken404.map(toEntry),
+  wrongPrefix404: wrongPrefix404.map(toWrongPrefixEntry),
   brokenAnchors:  brokenAnchors.map(toEntry),
   serverErrors:   serverErrors.map(toEntry),
   botBlocked:     botBlocked.map(toEntry),
@@ -88,6 +122,10 @@ const report = {
 await mkdir('reports', { recursive: true });
 await writeFile('reports/crawl-report.json', JSON.stringify(report, null, 2));
 console.error(`📊 report written to reports/crawl-report.json`);
+
+if (wrongPrefix404.length > 0) {
+  console.error(`⚠️  ${wrongPrefix404.length} link(s) are missing a section prefix in their href (not counted as broken)`);
+}
 
 if (botBlocked.length > 0) {
   console.error(`⚠️  ${botBlocked.length} page(s) returned 403 (Cloudflare bot-detection, not broken links)`);
